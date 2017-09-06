@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# pyCharm project
+.idea/
+database/emails.db
