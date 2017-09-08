@@ -1,1 +1,1 @@
-# pymail
+PyMail project
