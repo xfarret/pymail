@@ -9,7 +9,11 @@ account = Table(
     Column('firstname', String(100), nullable=False),
     Column('lastname', String(100), nullable=False),
     Column('email', String(150), unique=True, nullable=False),
-    Column('password', String(100), nullable=False)
+    Column('password', String(100), nullable=False),
+    Column('imap_server', String, nullable=False),
+    Column('imap_port', Integer, nullable=True),
+    Column('smtp_server', String, nullable=True),
+    Column('smtp_port', Integer, nullable=True),
 )
 
 

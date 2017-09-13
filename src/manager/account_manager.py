@@ -4,7 +4,6 @@ from entity.account import Account
 
 class AccountManager:
     __accounts__ = {}
-    __logged__ = {}
     __instance__ = None
 
     def __init__(self):
@@ -51,7 +50,6 @@ class AccountManager:
             session.add(account)
             session.commit()
             self.__accounts__[account.id] = account
-            session.close()
         except:
             return False
         finally:
