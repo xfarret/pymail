@@ -49,11 +49,12 @@ class AccountManager:
         :param account:
         :return:
         """
-        return DbEngine.get_session(self.__db_urls__[account.id])
+        return DbEngine.get_session(account.id, self.__db_urls__[account.id])
 
     def add_account(self, account):
         """
         Add an account on the account's list and store it on the database
+        Create specific database and all tables
         :param account:
         :return: True if no error occures, False otherwise
         """

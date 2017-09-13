@@ -21,8 +21,8 @@ class Folder(Base):
 
     parent = relation('Folder', remote_side=[id])
 
-    def __init__(self):
-        pass
+    # def __init__(self):
+    #     pass
         # self.account = account
         # self.account_id = account.id
 

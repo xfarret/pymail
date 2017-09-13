@@ -53,20 +53,20 @@ class DatabaseManager:
             DatabaseManager.__instance__ = DatabaseManager()
         return DatabaseManager.__instance__
 
-    def get_tables(self):
-        return self.tables
-
-    # def create_database(self, db_path):
-    #     return sqlite3.connect(db_path)
-
     def create_tables(self, account):
+        """
+        Create tables on database. If database doesn't exists, it will be created
+        :param account:
+        :return:
+        """
         directory = '../database/' + account.email
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        with sqlite3.connect(directory + '/pymail.db') as conn:
-            engine = DbEngine.get_engine(account.db_url)
-            for table_name, table in self.tables.items():
-                table.metadata.bind = engine
-                table.create()
-                print("'" + table_name + "' created at [" + account.db_url + "]")
+        if not os.path.exists(directory + '/pymail.db'):
+            with sqlite3.connect(directory + '/pymail.db') as conn:
+                engine = DbEngine.get_engine(account.id, account.db_url)
+                for table_name, table in self.tables.items():
+                    table.metadata.bind = engine
+                    table.create()
+                    print("'" + table_name + "' created at [" + account.db_url + "]")
