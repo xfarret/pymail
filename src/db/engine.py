@@ -16,8 +16,8 @@ class DbEngine:
         return DbEngine.engine
 
     @staticmethod
-    def get_session():
-        engine = DbEngine.get_engine()
+    def get_session(url='sqlite:///../database/emails.db'):
+        engine = DbEngine.get_engine(url)
         base = declarative_base()
         base.metadata.bind = engine
         DBSession = sessionmaker(bind=engine)

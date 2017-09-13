@@ -1,12 +1,8 @@
-# from entity.mail import Mail
-from datetime import datetime
-from email.message import Message
-from email.parser import BytesParser
-
 from db.engine import DbEngine
 from entity.mail import Mail
 from manager.account_manager import AccountManager
 import email
+import re
 
 
 class MailManager:
@@ -69,30 +65,35 @@ class MailManager:
         result, data = ressource.uid('search', None, "ALL")
         return data[0].split()
 
-    def get_structured_labels(self, account, directory='""'):
-        structuredLabels = {}
+    def get_labels(self, account, directory='""'):
+        structuredLabels = {'root': []}
         mail = account.login()
         typ, labels = mail.list(directory)
         for labelElems in labels:
             labelElems = labelElems.decode()
-            # labelElems = labelElems.replace('"', '')
             labelStruct = labelElems.split('/')
             if len(labelStruct) == 2:
                 label = labelStruct[1].replace('" ', '')
                 label = label.replace('"', '')
-                if 'root' not in structuredLabels:
-                    structuredLabels['root'] = []
-                structuredLabels['root'].append(label)
 
+                structuredLabels['root'].append(label)
+            else:
+
+                for i in range(1, len(labelStruct)):
+                    label = labelStruct[i].replace('" ', '')
+                    label = label.replace('"', '')
+                    print(label)
             # structuredLabels['root'] = label
 
         return labels
 
-    def get_label_uids(self, account):
-        ressource = account.login()
-        uid('FETCH', uid, '(X-GM-LABELS)')
-        return ressource.fetch('search', '(X-GM-LABELS)')
+    def get_message_labels(self, headers):
+        if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
+            labels = re.search(r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
+            return map(lambda l: l.replace('"', '').decode("string_escape"), labels)
+        else:
+            return list()
 
-    def get_mail_to_download(self):
-        session = DbEngine.get_session()
+    # def get_mail_to_download(self):
+    #     session = DbEngine.get_session()
 

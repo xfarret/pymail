@@ -1,16 +1,20 @@
 from db.engine import DbEngine
 from entity.account import Account
+from manager.database_manager import DatabaseManager
 
 
 class AccountManager:
     __accounts__ = {}
+    __db_urls__ = {}
     __instance__ = None
 
     def __init__(self):
         session = DbEngine.get_session()
         for account in session.query(Account):
+            self.__db_urls__[account.id] = account.db_url
             self.__accounts__[account.id] = account
         session.close()
+        self.databaseManager = DatabaseManager.get_instance()
 
     @staticmethod
     def get_instance():
@@ -39,6 +43,14 @@ class AccountManager:
             return self.__accounts__[account_id]
         return None
 
+    def get_session(self, account):
+        """
+        Return a session for a specific account
+        :param account:
+        :return:
+        """
+        return DbEngine.get_session(self.__db_urls__[account.id])
+
     def add_account(self, account):
         """
         Add an account on the account's list and store it on the database
@@ -50,10 +62,13 @@ class AccountManager:
             session.add(account)
             session.commit()
             self.__accounts__[account.id] = account
+
         except:
             return False
         finally:
             session.close()
+
+        self.databaseManager.create_tables(account)
         return True
 
     def remove_account(self, account):

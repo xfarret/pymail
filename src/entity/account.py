@@ -39,3 +39,8 @@ class Account(Base):
         if self.__imap_account__ is None:
             return False
         return True
+
+    def _get_db_url(self):
+        return 'sqlite:///../database/' + self.email + '/pymail.db'
+
+    db_url = property(_get_db_url)
