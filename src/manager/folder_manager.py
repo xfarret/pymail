@@ -1,9 +1,10 @@
+import base64
+
+from sqlalchemy.orm.query import Query
+
 from db.engine import DbEngine
 from entity.folder import Folder
-from entity.mail import Mail
 from manager.account_manager import AccountManager
-import email
-import re
 
 
 class FolderManager:
@@ -21,54 +22,91 @@ class FolderManager:
             labelStruct = labelElems.split('/')
 
             if len(labelStruct) > 2:
-                FolderManager.__create_label(None, labelStruct[1], labelStruct[2:])
+                FolderManager.__create_label__(account, None, labelStruct[1], labelStruct[0], labelStruct[2:])
             else:
-                FolderManager.__create_label(None, labelStruct[1], None)
-            # for i in range(1, len(labelStruct)):
-            #     label = labelStruct[i].replace('" ', '')
-            #     label = label.replace('"', '')
-            #     print(label)
-
+                FolderManager.__create_label__(account, None, labelStruct[1], labelStruct[0], None)
 
     @staticmethod
-    def __create_label(parent, child_name, children=None):
-        # create child
+    def __create_label__(account, parent, child_name, attributes, children=None):
+        child_name = FolderManager.__clean_label__(child_name)
+        attributes = FolderManager.__clean_attribute__(attributes)
+
         folder = Folder()
         folder.name = child_name
+        folder.attributes = attributes
         if parent is not None:
             folder.parent = parent
+
+        folder = FolderManager.__persist__(account, folder)
 
         if children is None:
             return folder
 
         if len(children) > 1:
-            return FolderManager.__create_label(parent=folder, child_name=children[0], children=children[1:])
+            return FolderManager.__create_label__(account, parent=folder, child_name=children[0], attributes=attributes, children=children[1:])
         else:
-            return FolderManager.__create_label(parent=folder, child_name=children[0])
+            return FolderManager.__create_label__(account, parent=folder, child_name=children[0], attributes=attributes)
 
+    @staticmethod
+    def __clean_label__(label):
+        label = label.replace('" ', '')
+        label = label.replace('"', '')
+        return FolderManager.__imaputf7decode__(label)
 
+    @staticmethod
+    def __clean_attribute__(attribute):
+        attribute = attribute.replace('"', '')
+        attribute = attribute.replace('(', '')
+        attribute = attribute.replace(')', '')
+        return attribute.replace('\\', '')
 
-    # def get_labels(self, account, directory='""'):
-    #     structuredLabels = {'root': []}
-    #     mail = account.login()
-    #     typ, labels = mail.list(directory)
-    #     for labelElems in labels:
-    #         labelElems = labelElems.decode()
-    #         labelStruct = labelElems.split('/')
-    #         if len(labelStruct) == 2:
-    #             label = labelStruct[1].replace('" ', '')
-    #             label = label.replace('"', '')
-    #
-    #             structuredLabels['root'].append(label)
-    #         else:
-    #
-    #             for i in range(1, len(labelStruct)):
-    #                 label = labelStruct[i].replace('" ', '')
-    #                 label = label.replace('"', '')
-    #                 print(label)
-    #         # structuredLabels['root'] = label
-    #
-    #     return labels
+    @staticmethod
+    def __b64padanddecode__(b):
+        """Decode unpadded base64 data"""
+        b += (-len(b) % 4) * '='  # base64 padding (if adds '===', no valid padding anyway)
+        return base64.b64decode(b, altchars='+,', validate=True).decode('utf-16-be')
+
+    @staticmethod
+    def __imaputf7decode__(s):
+        """Decode a string encoded according to RFC2060 aka IMAP UTF7.
+        Minimal validation of input, only works with trusted data"""
+        lst = s.split('&')
+        out = lst[0]
+        for e in lst[1:]:
+            u, a = e.split('-', 1)  # u: utf16 between & and 1st -, a: ASCII chars folowing it
+            if u == '':
+                out += '&'
+            else:
+                out += FolderManager.__b64padanddecode__(u)
+            out += a
+        return out
+
+    @staticmethod
+    def __imaputf7encode__(s):
+        """"Encode a string into RFC2060 aka IMAP UTF7"""
+        s = s.replace('&', '&-')
+        iters = iter(s)
+        unipart = out = ''
+        for c in s:
+            if 0x20 <= ord(c) <= 0x7f:
+                if unipart != '':
+                    out += '&' + base64.b64encode(unipart.encode('utf-16-be')).decode('ascii').rstrip('=') + '-'
+                    unipart = ''
+                out += c
+            else:
+                unipart += c
+        if unipart != '':
+            out += '&' + base64.b64encode(unipart.encode('utf-16-be')).decode('ascii').rstrip('=') + '-'
+        return out
+
+    @staticmethod
+    def __persist__(account, folder):
+        session = DbEngine.get_session(account.id, account.db_url)
+        query = session.query(Folder).filter(Folder.name == folder.name)
+        result = query.all()
+
+        return result
+
 
     # def get_message_labels(self, headers):
     #     if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
