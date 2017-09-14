@@ -35,7 +35,8 @@ class FolderManager:
         folder.name = child_name
         folder.attributes = attributes
         if parent is not None:
-            folder.parent = parent
+            folder.parent = FolderManager.__get_folder__(account, parent.name)
+            # folder.parent = parent
 
         folder = FolderManager.__persist__(account, folder)
 
@@ -102,8 +103,25 @@ class FolderManager:
     @staticmethod
     def __persist__(account, folder):
         session = DbEngine.get_session(account.id, account.db_url)
+
         query = session.query(Folder).filter(Folder.name == folder.name)
-        result = query.all()
+        exists = session.query(query.exists()).one()[0]
+
+        if exists:
+            folder = FolderManager.__get_folder__(account, folder_name=folder.name)
+        else:
+            session.add(folder)
+            session.commit()
+            session.close()
+
+        return folder
+
+    @staticmethod
+    def __get_folder__(account, folder_name):
+        session = DbEngine.get_session(account.id, account.db_url)
+        query = session.query(Folder).filter(Folder.name == folder_name)
+        result = query.one()
+        session.close()
 
         return result
 
