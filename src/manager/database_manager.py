@@ -12,7 +12,8 @@ class DatabaseManager:
         self.tables['mail'] = \
             Table(
                 'mail', MetaData(),
-                Column('uid', Integer, nullable=False, unique=True, primary_key=True),
+                Column('id', Integer, nullable=False, autoincrement=True, primary_key=True),
+                Column('uid', Integer, nullable=False),
                 Column('date_field', String, nullable=False),
                 Column('timestamp', Float, nullable=False),
                 Column('from_field', String, nullable=False),
@@ -28,7 +29,7 @@ class DatabaseManager:
                 Column('content_type', String(150), nullable=True),
                 Column('charset', String(50), nullable=True),
                 Column('flags', String, nullable=True),
-                Column('account_id', Integer, nullable=False),
+                # Column('account_id', Integer, nullable=False),
                 Column('label', String, nullable=False)
             )
 

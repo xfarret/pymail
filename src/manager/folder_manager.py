@@ -1,10 +1,7 @@
-import base64
-
-from sqlalchemy.orm.query import Query
-
 from db.engine import DbEngine
 from entity.folder import Folder
 from manager.account_manager import AccountManager
+from manager.encoder_manager import EncoderManager
 
 
 class FolderManager:
@@ -52,7 +49,7 @@ class FolderManager:
     def __clean_label__(label):
         label = label.replace('" ', '')
         label = label.replace('"', '')
-        return FolderManager.__imaputf7decode__(label)
+        return EncoderManager.imaputf7decode(label)
 
     @staticmethod
     def __clean_attribute__(attribute):
@@ -60,45 +57,6 @@ class FolderManager:
         attribute = attribute.replace('(', '')
         attribute = attribute.replace(')', '')
         return attribute.replace('\\', '')
-
-    @staticmethod
-    def __b64padanddecode__(b):
-        """Decode unpadded base64 data"""
-        b += (-len(b) % 4) * '='  # base64 padding (if adds '===', no valid padding anyway)
-        return base64.b64decode(b, altchars='+,', validate=True).decode('utf-16-be')
-
-    @staticmethod
-    def __imaputf7decode__(s):
-        """Decode a string encoded according to RFC2060 aka IMAP UTF7.
-        Minimal validation of input, only works with trusted data"""
-        lst = s.split('&')
-        out = lst[0]
-        for e in lst[1:]:
-            u, a = e.split('-', 1)  # u: utf16 between & and 1st -, a: ASCII chars folowing it
-            if u == '':
-                out += '&'
-            else:
-                out += FolderManager.__b64padanddecode__(u)
-            out += a
-        return out
-
-    @staticmethod
-    def __imaputf7encode__(s):
-        """"Encode a string into RFC2060 aka IMAP UTF7"""
-        s = s.replace('&', '&-')
-        iters = iter(s)
-        unipart = out = ''
-        for c in s:
-            if 0x20 <= ord(c) <= 0x7f:
-                if unipart != '':
-                    out += '&' + base64.b64encode(unipart.encode('utf-16-be')).decode('ascii').rstrip('=') + '-'
-                    unipart = ''
-                out += c
-            else:
-                unipart += c
-        if unipart != '':
-            out += '&' + base64.b64encode(unipart.encode('utf-16-be')).decode('ascii').rstrip('=') + '-'
-        return out
 
     @staticmethod
     def __persist__(account, folder):

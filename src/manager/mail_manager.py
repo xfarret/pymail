@@ -2,7 +2,6 @@ from db.engine import DbEngine
 from entity.mail import Mail
 from manager.account_manager import AccountManager
 import email
-import re
 
 
 class MailManager:
@@ -65,6 +64,28 @@ class MailManager:
         result, data = ressource.uid('search', None, "ALL")
         return data[0].split()
 
-    # def get_mail_to_download(self):
-    #     session = DbEngine.get_session()
+    def new_mail(self, last_uid, account, label='INBOX'):
+        mail_server = account.login()
+        mail_server.select(label, readonly=True)
 
+        if last_uid is None:
+            command = "ALL"
+            last_uid = -1
+        else:
+            command = "UID {}:*".format(last_uid)
+
+        result, data = mail_server.uid('search', None, command)
+        messages = data[0].split()
+
+        session = self.__accountManager__.get_session(account)
+
+        for message_uid in messages:
+            # SEARCH command *always* returns at least the most
+            # recent message, even if it has already been synced
+            if int(message_uid) > last_uid:
+                result, data = mail_server.uid('fetch', message_uid, '(RFC822)')
+                mail = Mail()
+                mail.mail_from_bytes(data[0][1], message_uid)
+                mail.label = label
+                mail.persist(session)
+                print('mail [' + mail.id + '] created for account [' + account.email + ']')

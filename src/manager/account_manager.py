@@ -58,19 +58,12 @@ class AccountManager:
         :param account:
         :return: True if no error occures, False otherwise
         """
-        session = DbEngine.get_session()
-        try:
-            session.add(account)
-            session.commit()
+        if account.persist():
             self.__accounts__[account.id] = account
+            self.databaseManager.create_tables(account)
+            return True
 
-        except:
-            return False
-        finally:
-            session.close()
-
-        self.databaseManager.create_tables(account)
-        return True
+        return False
 
     def remove_account(self, account):
         """
@@ -78,15 +71,10 @@ class AccountManager:
         :param account:
         :return: True if no error occures, False otherwise
         """
-        session = DbEngine.get_session()
-        try:
-            account_id = account.id
-            session.delete(account)
-            session.commit()
+        account_id = account.id
+        if account.delete():
             del self.__accounts__[account_id]
-        except:
-            return False
-        finally:
-            session.close()
-        return True
+            return True
+
+        return False
 

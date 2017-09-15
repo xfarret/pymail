@@ -1,6 +1,9 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.exc import StatementError
 from sqlalchemy.ext.declarative import declarative_base
 import imaplib
+
+from db.engine import DbEngine
 
 Base = declarative_base()
 
@@ -42,5 +45,27 @@ class Account(Base):
 
     def _get_db_url(self):
         return 'sqlite:///../database/' + self.email + '/pymail.db'
+
+    def persist(self):
+        session = DbEngine.get_session()
+        try:
+            session.add(self)
+            session.commit()
+        except StatementError as e:
+            print(e)
+            return None
+
+        return True
+
+    def delete(self):
+        session = DbEngine.get_session()
+        try:
+            session.delete(self)
+            session.commit()
+        except StatementError as e:
+            print(e)
+            return False
+
+        return True
 
     db_url = property(_get_db_url)
