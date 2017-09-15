@@ -103,3 +103,4 @@ ENV/
 # pyCharm project
 .idea/
 database/emails.db
+database/**/*.db
