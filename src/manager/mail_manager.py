@@ -82,10 +82,10 @@ class MailManager:
         for message_uid in messages:
             # SEARCH command *always* returns at least the most
             # recent message, even if it has already been synced
-            if int(message_uid) > last_uid:
+            if int(message_uid) > int(last_uid):
                 result, data = mail_server.uid('fetch', message_uid, '(RFC822)')
                 mail = Mail()
                 mail.mail_from_bytes(data[0][1], message_uid)
                 mail.label = label
                 mail.persist(session)
-                print('mail [' + mail.id + '] created for account [' + account.email + ']')
+                print('mail [' + str(mail.uid) + '] created for account [' + account.email + ']')

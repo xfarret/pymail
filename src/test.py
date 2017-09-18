@@ -6,7 +6,7 @@ from manager.mail_manager import MailManager
 session = DbEngine.get_session()
 # print(session)
 
-account = AccountManager.get_instance().get(1)
+account = AccountManager.get_instance().get(2)
 # mailManager = MailManager()
 # print(mailManager.get_structured_labels(account))
 # uids = mailManager.get_mail_uids(account)
@@ -17,7 +17,7 @@ account = AccountManager.get_instance().get(1)
 # FolderManager.init_labels(account)
 
 mail_manager = MailManager()
-mail_manager.new_mail(None, account, "INBOX")
+mail_manager.new_mail(None, account, "Sent")
 
 # for mail in new_mail_generator(last_uid=42,
 #                                host="imap.example.com", port=143,
