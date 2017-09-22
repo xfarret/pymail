@@ -14,12 +14,12 @@ account = AccountManager.get_instance().get(2)
 # mails = mailManager.get_mails(account, uids)
 # print(len(mails))
 
-# FolderManager.init_labels(account)
+FolderManager.init_labels(account)
 
 mail_manager = MailManager()
-mail_manager.new_mail(None, account, "Sent")
+mail_manager.check_emails(account, "INBOX")
 
-# for mail in new_mail_generator(last_uid=42,
-#                                host="imap.example.com", port=143,
-#                                login="user@exampl.com",
-#                                password="password"):
+
+# imapconn = account.login()
+# imapconn.select("INBOX", readonly=True)
+# mail_manager.get_flags(imapconn, '472')

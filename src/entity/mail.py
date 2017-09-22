@@ -135,5 +135,40 @@ class Mail(Base):
         # session.close()
         return True
 
+    @staticmethod
+    def get_mail(session, uid):
+        try:
+            obj = session.query(Mail).filter(Mail.uid == uid).one()
+
+            return obj
+        except StatementError as e:
+            print(e)
+            return False
+
+    @staticmethod
+    def get_last(session):
+        try:
+            obj = session.query(Mail).order_by(Mail.id.desc()).first()
+
+            return obj
+        except StatementError as e:
+            print(e)
+            return False
+
     date = property(_get_date, _set_date)
     body = property(_get_body, _set_body)
+
+    @staticmethod
+    def get_uids(session):
+        try:
+            uids = session.query(Mail.uid).all()
+            # return uids
+            result = list()
+
+            for uid in uids:
+                result.append(uid[0])
+
+            return result
+        except StatementError as e:
+            print(e)
+            return False
