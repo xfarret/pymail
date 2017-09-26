@@ -40,8 +40,10 @@ class DatabaseManager:
                 'folder', MetaData(),
                 Column('id', Integer, nullable=False, autoincrement=True, primary_key=True),
                 Column('name', String, nullable=False),
+                Column('internal_name', String, nullable=False),
                 Column('parent_id', Integer, ForeignKey('folder.id')),
                 Column('attributes', String, nullable=True),
+                Column('path', String, nullable=True),
                 Column('unread_count', Integer, nullable=True),
             )
 

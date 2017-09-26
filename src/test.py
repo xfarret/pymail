@@ -6,7 +6,7 @@ from manager.mail_manager import MailManager
 session = DbEngine.get_session()
 # print(session)
 
-account = AccountManager.get_instance().get(2)
+account = AccountManager.get_instance().get(1)
 # mailManager = MailManager()
 # print(mailManager.get_structured_labels(account))
 # uids = mailManager.get_mail_uids(account)
@@ -16,9 +16,12 @@ account = AccountManager.get_instance().get(2)
 
 FolderManager.init_labels(account)
 
-mail_manager = MailManager()
-mail_manager.sync_emails(account, "INBOX")
+# mail_manager = MailManager()
+# FolderManager.get_folder(account, "Sent")
+# mail_manager.sync_emails(account, "Important")
 
+# path = FolderManager.get_folder_path(account, 'INBOX')
+# mail_manager.sync_emails(account, '"%s"' % path)
 
 # imapconn = account.login()
 # imapconn.select("INBOX", readonly=True)

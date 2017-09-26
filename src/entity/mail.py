@@ -113,11 +113,9 @@ class Mail(Base):
             session.add(self)
             session.commit()
         except StatementError as e:
-            # session.close()
             print(e)
             return False
 
-        # session.close()
         return True
 
     def delete(self, session):
@@ -125,11 +123,9 @@ class Mail(Base):
             session.delete(self)
             session.commit()
         except StatementError as e:
-            # session.close()
-            print (e)
+            print(e)
             return False
 
-        # session.close()
         return True
 
     @staticmethod
