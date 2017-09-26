@@ -1,5 +1,7 @@
 import os
 import sqlite3
+
+from pip._vendor.distlib._backport import shutil
 from sqlalchemy import *
 from db.engine import DbEngine
 
@@ -43,7 +45,6 @@ class DatabaseManager:
                 Column('unread_count', Integer, nullable=True),
             )
 
-
     @staticmethod
     def get_instance():
         """
@@ -71,3 +72,14 @@ class DatabaseManager:
                     table.metadata.bind = engine
                     table.create()
                     print("'" + table_name + "' created at [" + account.db_url + "]")
+
+    @staticmethod
+    def remove_table(account):
+        """
+        Delete database
+        :param account:
+        :return:
+        """
+        directory = '../database/' + account.email
+        if os.path.exists(directory + '/pymail.db'):
+            shutil.rmtree(directory)

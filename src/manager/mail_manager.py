@@ -80,7 +80,7 @@ class MailManager:
         if label_id is None:
             return 0
 
-        last_email = Mail.get_last(session, label)
+        last_email = Mail.get_last(session, label_id)
         last_uid = None
         if last_email is not None:
             last_uid = last_email.uid.decode()

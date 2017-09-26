@@ -6,4 +6,4 @@ accounts = dict(accountManager.list()).items()
 
 for (key, account) in accounts:
     print(account.name)
-    accountManager.remove_account(account)
+    accountManager.remove_account(account, True)

@@ -65,15 +65,18 @@ class AccountManager:
 
         return False
 
-    def remove_account(self, account):
+    def remove_account(self, account, purge=False):
         """
         Remove an account on the account's list and remove it on the database
         :param account:
+        :param purge:
         :return: True if no error occures, False otherwise
         """
         account_id = account.id
         if account.delete():
             del self.__accounts__[account_id]
+            if purge:
+                DatabaseManager.remove_table(account)
             return True
 
         return False
