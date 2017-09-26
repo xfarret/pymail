@@ -78,7 +78,7 @@ class MailManager:
 
         session = self.__accountManager__.get_session(account)
 
-        last_email = Mail.get_last(session)
+        last_email = Mail.get_last(session, label)
         last_uid = None
         if last_email is not None:
             last_uid = last_email.uid.decode()
@@ -111,7 +111,7 @@ class MailManager:
 
         session = self.__accountManager__.get_session(account)
 
-        local_uids = Mail.get_uids(session)
+        local_uids = Mail.get_uids(session, label)
         remote_uids = self.get_mail_uids(account, label)
         diff_uids = list(set(local_uids) - set(remote_uids))
 

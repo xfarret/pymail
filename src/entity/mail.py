@@ -146,9 +146,9 @@ class Mail(Base):
             return False
 
     @staticmethod
-    def get_last(session):
+    def get_last(session, label):
         try:
-            obj = session.query(Mail).order_by(Mail.id.desc()).first()
+            obj = session.query(Mail).filter(Mail.label == label).order_by(Mail.id.desc()).first()
 
             return obj
         except StatementError as e:
@@ -159,9 +159,9 @@ class Mail(Base):
     body = property(_get_body, _set_body)
 
     @staticmethod
-    def get_uids(session):
+    def get_uids(session, label):
         try:
-            uids = session.query(Mail.uid).all()
+            uids = session.query(Mail.uid).filter(Mail.label == label).all()
             # return uids
             result = list()
 
