@@ -1,11 +1,10 @@
 import email
 import time
 import json
-from sqlalchemy import Column, Integer, String, Float, JSON
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.exc import StatementError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.sqltypes import LargeBinary
-
 from manager.encoder_manager import EncoderManager
 
 Base = declarative_base()
@@ -31,12 +30,10 @@ class Mail(Base):
     content_type = Column(String(150), nullable=False)
     charset = Column(String(50), nullable=False)
     flags = Column(String, nullable=True)
-    # account_id = Column(Integer, nullable=False)
-    label = Column(String, nullable=False)
+    label_id = Column(Integer, nullable=False)
 
     def __init__(self):
         pass
-        # self.id = int(round(time.time() * 1000))
 
     def mail_from_bytes(self, bytes_data, uid):
         msg = email.message_from_bytes(bytes_data)
@@ -146,22 +143,19 @@ class Mail(Base):
             return False
 
     @staticmethod
-    def get_last(session, label):
+    def get_last(session, label_id):
         try:
-            obj = session.query(Mail).filter(Mail.label == label).order_by(Mail.id.desc()).first()
+            obj = session.query(Mail).filter(Mail.label_id == label_id).order_by(Mail.id.desc()).first()
 
             return obj
         except StatementError as e:
             print(e)
             return False
 
-    date = property(_get_date, _set_date)
-    body = property(_get_body, _set_body)
-
     @staticmethod
-    def get_uids(session, label):
+    def get_uids(session, label_id):
         try:
-            uids = session.query(Mail.uid).filter(Mail.label == label).all()
+            uids = session.query(Mail.uid).filter(Mail.label_id == label_id).all()
             # return uids
             result = list()
 
@@ -172,3 +166,6 @@ class Mail(Base):
         except StatementError as e:
             print(e)
             return False
+
+    date = property(_get_date, _set_date)
+    body = property(_get_body, _set_body)

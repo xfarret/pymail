@@ -1,7 +1,6 @@
-from db.engine import DbEngine
+from entity.folder import Folder
 from entity.mail import Mail
 from manager.account_manager import AccountManager
-import email
 
 
 class MailManager:
@@ -77,6 +76,9 @@ class MailManager:
         imapconn.select(label, readonly=True)
 
         session = self.__accountManager__.get_session(account)
+        label_id = Folder.get_id(session, label)
+        if label_id is None:
+            return 0
 
         last_email = Mail.get_last(session, label)
         last_uid = None
@@ -91,6 +93,7 @@ class MailManager:
 
         result, data = imapconn.uid('search', None, command)
         messages = data[0].split()
+        added_messages = 0
 
         for message_uid in messages:
             # SEARCH command *always* returns at least the most
@@ -99,10 +102,13 @@ class MailManager:
                 result, data = imapconn.uid('fetch', message_uid, '(RFC822)')
                 mail = Mail()
                 mail.mail_from_bytes(data[0][1], message_uid)
-                mail.label = label
+                mail.label_id = label_id
                 mail.flags = MailManager.get_flags(imapconn, message_uid)
                 mail.persist(session)
-                print('mail [' + str(mail.uid) + '] created for account [' + account.email + ']')
+                added_messages += 1
+                # print('mail [' + str(mail.uid) + '] created for account [' + account.email + ']')
+
+        return added_messages
 
     def check_remote_deleted_emails(self, imapconn, account, label='INBOX'):
         if imapconn is None:
@@ -110,21 +116,34 @@ class MailManager:
         imapconn.select(label, readonly=True)
 
         session = self.__accountManager__.get_session(account)
+        label_id = Folder.get_id(session, label)
+        if label_id is None:
+            return 0
 
-        local_uids = Mail.get_uids(session, label)
+        local_uids = Mail.get_uids(session, label_id)
         remote_uids = self.get_mail_uids(account, label)
         diff_uids = list(set(local_uids) - set(remote_uids))
 
         for uid in diff_uids:
             Mail.get_mail(session, uid).delete(session)
 
-    def check_emails(self, account, label='INBOX'):
+        return len(diff_uids)
+
+    def sync_emails(self, account, label='INBOX'):
+        """
+        Synchronize mails for a specific label. Check removed & new mails
+        :param account: account to use
+        :param label: label name
+        :return:
+        """
         imapconn = account.login()
 
         print("check deleted mails")
-        self.check_remote_deleted_emails(imapconn, account, label)
+        v = self.check_remote_deleted_emails(imapconn, account, label)
+        print("%d mails removed"%v)
         print("check new mails")
-        self.get_new_mails(imapconn, account, label)
+        v = self.get_new_mails(imapconn, account, label)
+        print("%d mails added"%v)
 
     def check_unseen_messages(self, imapconn, account, label='INBOX'):
         """

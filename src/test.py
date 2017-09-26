@@ -17,7 +17,7 @@ account = AccountManager.get_instance().get(2)
 FolderManager.init_labels(account)
 
 mail_manager = MailManager()
-mail_manager.check_emails(account, "INBOX")
+mail_manager.sync_emails(account, "INBOX")
 
 
 # imapconn = account.login()

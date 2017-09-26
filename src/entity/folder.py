@@ -1,8 +1,7 @@
 from sqlalchemy import *
+from sqlalchemy.exc import StatementError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relation
-
-from db.engine import DbEngine
 
 Base = declarative_base()
 
@@ -21,28 +20,14 @@ class Folder(Base):
 
     parent = relation('Folder', remote_side=[id])
 
-    # def __init__(self):
-    #     pass
-        # self.account = account
-        # self.account_id = account.id
+    @staticmethod
+    def get_id(session, name):
+        try:
+            result = session.query(Folder.id).filter( Folder.name == name).one()
 
-    # def create(self):
-    #     session = DbEngine.get_session()
-    #     try:
-    #         session.add(self)
-    #         session.commit()
-    #     except:
-    #         return False
-    #     finally:
-    #         session.close()
-    #
-    # def remove(self):
-    #     pass
-    #
-    # def exists(self, account, name):
-    #     labels = []
-    #     session = DbEngine.get_session()
-    #     for folder in session.query(Folder).filter(Folder.name == name and Folder.account_id == account.id):
-    #         labels.append(folder)
-    #     session.close()
-    #     return labels
+            if not result:
+                return None
+
+            return result[0]
+        except:
+            return None

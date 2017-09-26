@@ -30,7 +30,7 @@ class DatabaseManager:
                 Column('charset', String(50), nullable=True),
                 Column('flags', String, nullable=True),
                 # Column('account_id', Integer, nullable=False),
-                Column('label', String, nullable=False)
+                Column('label_id', Integer, nullable=False)
             )
 
         self.tables['folder'] = \
