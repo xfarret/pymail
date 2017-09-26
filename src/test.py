@@ -16,9 +16,9 @@ account = AccountManager.get_instance().get(1)
 
 FolderManager.init_labels(account)
 
-# mail_manager = MailManager()
-# FolderManager.get_folder(account, "Sent")
-# mail_manager.sync_emails(account, "Important")
+mail_manager = MailManager()
+# folder = FolderManager.get_folder(account, "[Gmail]/Important")
+mail_manager.sync_emails(account, "[Gmail]/Important")
 
 # path = FolderManager.get_folder_path(account, 'INBOX')
 # mail_manager.sync_emails(account, '"%s"' % path)

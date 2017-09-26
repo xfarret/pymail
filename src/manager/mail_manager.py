@@ -52,7 +52,7 @@ class MailManager:
     #
     #     return mails_to_return
 
-    def get_mail_uids(self, account, label='INBOX'):
+    def get_mail_uids(self, account, folder_path):
         """
         Get mail uids from specific account
         :param account: Account
@@ -60,24 +60,24 @@ class MailManager:
         :return:
         """
         ressource = account.login()
-        ressource.select(label, readonly=True)
+        ressource.select('"%s"' % folder_path, readonly=True)
         result, data = ressource.uid('search', None, "ALL")
         return data[0].split()
 
-    def get_new_mails(self, imapconn, account, label_path, label='INBOX'):
+    def get_new_mails(self, imapconn, account, folder):
         """
         Get new mails for a specific account
         :param imapconn:
         :param account:
-        :param label:
+        :param folder:
         :return:
         """
         if imapconn is None:
             imapconn = account.login()
-        imapconn.select(label_path, readonly=True)
+        imapconn.select('"%s"' % folder.path, readonly=True)
 
         session = self.__accountManager__.get_session(account)
-        label_id = Folder.get_id(session, label)
+        label_id = Folder.get_id(session, folder.path)
         if label_id is None:
             return 0
 
@@ -111,18 +111,18 @@ class MailManager:
 
         return added_messages
 
-    def check_remote_deleted_emails(self, imapconn, account, label_path, label='INBOX'):
+    def check_remote_deleted_emails(self, imapconn, account, folder):
         if imapconn is None:
             imapconn = account.login()
-        imapconn.select(label_path, readonly=True)
+        imapconn.select('"%s"' % folder.path, readonly=True)
 
         session = self.__accountManager__.get_session(account)
-        label_id = Folder.get_id(session, label)
+        label_id = Folder.get_id(session, folder.path)
         if label_id is None:
             return 0
 
         local_uids = Mail.get_uids(session, label_id)
-        remote_uids = self.get_mail_uids(account, label_path)
+        remote_uids = self.get_mail_uids(account, folder.path)
         diff_uids = list(set(local_uids) - set(remote_uids))
 
         for uid in diff_uids:
@@ -130,22 +130,22 @@ class MailManager:
 
         return len(diff_uids)
 
-    def sync_emails(self, account, label_path, label='INBOX'):
+    def sync_emails(self, account, folder_path):
         """
         Synchronize mails for a specific label. Check removed & new mails
         :param account: account to use
-        :param label: label name
+        :param folder_path: folder path
         :return:
         """
         imapconn = account.login()
-        # labelObj = FolderManager.get_folder_name(account, label)
+        folder = FolderManager.get_folder(account, folder_path)
 
         print("check deleted mails")
-        v = self.check_remote_deleted_emails(imapconn, account, label_path, label)
-        print("%d mails removed"%v)
+        v = self.check_remote_deleted_emails(imapconn, account, folder)
+        print("%d mails removed" % v)
         print("check new mails")
-        v = self.get_new_mails(imapconn, account, label_path, label)
-        print("%d mails added"%v)
+        v = self.get_new_mails(imapconn, account, folder)
+        print("%d mails added" % v)
 
     def check_unseen_messages(self, imapconn, account, label='INBOX'):
         """

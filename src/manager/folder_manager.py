@@ -38,7 +38,10 @@ class FolderManager:
         folder.attributes = attributes
         if parent is not None:
             folder.parent = FolderManager.get_folder(account, parent.name)
+            folder.path = folder.parent.path + "/" + folder.internal_name
             # folder.parent = parent
+        else:
+            folder.path = folder.internal_name
 
         folder = FolderManager.__persist__(account, folder)
 
@@ -78,11 +81,11 @@ class FolderManager:
     def __persist__(account, folder):
         session = DbEngine.get_session(account.id, account.db_url)
 
-        query = session.query(Folder).filter(Folder.name == folder.name)
+        query = session.query(Folder).filter(Folder.path == folder.path)
         exists = session.query(query.exists()).one()[0]
 
         if exists:
-            folder = FolderManager.get_folder(account, folder_name=folder.name)
+            folder = FolderManager.get_folder(account, folder_path=folder.path)
         else:
             session.add(folder)
             session.commit()
@@ -91,28 +94,10 @@ class FolderManager:
         return folder
 
     @staticmethod
-    def get_folder(account, folder_name):
+    def get_folder(account, folder_path):
         session = DbEngine.get_session(account.id, account.db_url)
-        query = session.query(Folder).filter(or_(Folder.name == folder_name, Folder.internal_name == folder_name))
+        query = session.query(Folder).filter(Folder.path == folder_path)
         result = query.one()
         session.close()
 
         return result
-
-    @staticmethod
-    def get_folder_path(account, internal_name):
-        session = DbEngine.get_session(account.id, account.db_url)
-
-        folder = session.query(Folder).filter(Folder.internal_name == internal_name).one()
-        if folder.parent_id is not None:
-            parent = session.query(Folder).get(folder.parent_id)
-
-            return FolderManager.get_folder_path(account, parent.internal_name) + "/" + folder.internal_name
-        return folder.internal_name
-
-    # def get_message_labels(self, headers):
-    #     if re.search(r'X-GM-LABELS \(([^\)]+)\)', headers):
-    #         labels = re.search(r'X-GM-LABELS \(([^\)]+)\)', headers).groups(1)[0].split(' ')
-    #         return map(lambda l: l.replace('"', '').decode("string_escape"), labels)
-    #     else:
-    #         return list()

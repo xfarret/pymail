@@ -24,9 +24,9 @@ class Folder(Base):
     # parent = relationship('Folder', lazy='subquery', cascade='all, delete-orphan')
 
     @staticmethod
-    def get_id(session, name):
+    def get_id(session, path):
         try:
-            result = session.query(Folder.id).filter( Folder.name == name).one()
+            result = session.query(Folder.id).filter(Folder.path == path).one()
 
             if not result:
                 return None
