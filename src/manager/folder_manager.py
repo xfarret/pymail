@@ -37,9 +37,13 @@ class FolderManager:
         folder.internal_name = internal_name
         folder.attributes = attributes
         if parent is not None:
+            session = DbEngine.get_session(account.id, account.db_url)
+            # On réattache l objet à la session
+            session.add(parent)
             folder.parent = FolderManager.get_folder(account, parent.name)
             folder.path = folder.parent.path + "/" + folder.internal_name
-            # folder.parent = parent
+            # On détache l objet de la session
+            session.expunge(parent)
         else:
             folder.path = folder.internal_name
 
