@@ -138,7 +138,7 @@ class MailManager:
         :return:
         """
         imapconn = account.login()
-        folder = FolderManager.get_folder(account, folder_path)
+        folder = FolderManager.get_label(account, folder_path)
 
         print("check deleted mails")
         v = self.check_remote_deleted_emails(imapconn, account, folder)

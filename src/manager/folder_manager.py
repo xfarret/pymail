@@ -25,6 +25,15 @@ class FolderManager:
                 FolderManager.__create_label__(account, None, labelStruct[1], labelStruct[0], None)
 
     @staticmethod
+    def get_labels(account, parent=None):
+        session = DbEngine.get_session(account.id, account.db_url)
+        query = session.query(Folder).filter(Folder.parent_id == parent)
+        folders = query.all()
+        session.close()
+
+        return folders
+
+    @staticmethod
     def __create_label__(account, parent, child_name, attributes, children=None):
         child_name = FolderManager.__clean_label__(child_name)
         attributes = FolderManager.__clean_attribute__(attributes)
@@ -40,7 +49,7 @@ class FolderManager:
             session = DbEngine.get_session(account.id, account.db_url)
             # On réattache l objet à la session
             session.add(parent)
-            folder.parent = FolderManager.get_folder(account, parent.name)
+            folder.parent = FolderManager.get_label(account, parent.name)
             folder.path = folder.parent.path + "/" + folder.internal_name
             # On détache l objet de la session
             session.expunge(parent)
@@ -89,7 +98,7 @@ class FolderManager:
         exists = session.query(query.exists()).one()[0]
 
         if exists:
-            folder = FolderManager.get_folder(account, folder_path=folder.path)
+            folder = FolderManager.get_label(account, folder_path=folder.path)
         else:
             session.add(folder)
             session.commit()
@@ -98,7 +107,7 @@ class FolderManager:
         return folder
 
     @staticmethod
-    def get_folder(account, folder_path):
+    def get_label(account, folder_path):
         session = DbEngine.get_session(account.id, account.db_url)
         query = session.query(Folder).filter(Folder.path == folder_path)
         result = query.one()

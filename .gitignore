@@ -104,3 +104,5 @@ ENV/
 .idea/
 database/emails.db
 database/**/*.db
+
+*.qmlc
